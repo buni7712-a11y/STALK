@@ -1,88 +1,243 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>STALK - 학생 투자 커뮤니티</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body class="bg-background text-zinc-100 font-sans min-h-screen flex flex-col md:flex-row">
+<!-- Tailwind CSS 및 Supabase 라이브러리 로드 -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <aside class="w-full md:w-64 bg-surface p-5 border-b md:border-r border-border flex flex-col justify-between">
-    <div>
-      <h1 class="text-2xl font-black text-neon tracking-wider mb-8" style="color: #1A66CC;">STALK</h1>
-      <nav class="space-y-1.5 text-sm font-medium">
-        <button onclick="showSection('feed-section')" class="w-full text-left p-3 rounded-xl bg-zinc-800 text-white font-bold" id="menu-feed">🔥 실시간 피드</button>
-        <button onclick="showSection('diary-section')" class="w-full text-left p-3 rounded-xl text-zinc-400 hover:bg-zinc-800 hover:text-white transition" id="menu-diary">📝 나의 투자일기</button>
-        <button onclick="showSection('ranking-section')" class="w-full text-left p-3 rounded-xl text-zinc-400 hover:bg-zinc-800 hover:text-white transition" id="menu-ranking">🏆 학생 주주 랭킹</button>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          background: '#09090b',
+          surface: '#18181b',
+          border: '#27272a',
+          neon: '#10b981'
+        }
+      }
+    }
+  }
+</script>
+
+<div class="bg-background text-zinc-100 font-sans min-h-screen flex flex-col md:flex-row">
+  <!-- 왼쪽 네비게이션 및 프로필 영역 -->
+  <aside class="w-full md:w-64 bg-surface p-5 border-b md:border-b-0 md:border-r border-border flex flex-col justify-between gap-6 shrink-0">
+    <div class="space-y-6">
+      <h1 class="text-2xl font-black text-neon tracking-wider">STALK</h1>
+      
+      <!-- 프로필 대시보드 -->
+      <div id="profile-box" class="bg-zinc-800/40 p-4 rounded-2xl border border-border space-y-3">
+        <div class="flex items-center gap-3">
+          <span id="user-avatar" class="text-2xl">👤</span>
+          <div class="min-w-0 flex-1">
+            <div id="user-nickname" class="font-bold text-sm truncate">미인증_주주</div>
+            <div class="text-xs text-zinc-400 mt-0.5">활동 자산: <span id="user-points" class="text-neon font-mono font-bold">100</span>p</div>
+            <div class="text-[10px] text-zinc-500 mt-0.5">팔로잉 <span id="following-count" class="text-zinc-300 font-bold">0</span> | 팔로워 <span id="followers-count" class="text-zinc-300 font-bold">0</span></div>
+          </div>
+        </div>
+        <div class="flex gap-1.5">
+          <input id="changeNicknameInput" type="text" placeholder="닉네임 변경" class="w-full bg-zinc-950 border border-border rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-neon">
+          <button onclick="updateProfile()" class="bg-zinc-700 hover:bg-zinc-600 text-white px-2.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition">변경</button>
+        </div>
+      </div>
+
+      <!-- 내비게이션 탭 버튼 -->
+      <nav class="space-y-1">
+        <button id="menu-feed" onclick="showSection('feed-section')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm bg-zinc-800 text-white font-bold transition">🔥 실시간 트레이딩 피드</button>
+        <button id="menu-dm" onclick="showSection('dm-section')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm text-zinc-400 hover:bg-zinc-800/50 transition">💬 다이렉트 메시지 (DM)</button>
+        <button id="menu-diary" onclick="showSection('diary-section')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm text-zinc-400 hover:bg-zinc-800/50 transition">📝 투자 일기</button>
+        <button id="menu-weekend" onclick="showSection('weekend-section')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm text-zinc-400 hover:bg-zinc-800/50 transition">🎮 주말 모의투자 대회</button>
+        <button id="menu-ranking" onclick="showSection('ranking-section')" class="w-full text-left px-4 py-2.5 rounded-xl text-sm text-zinc-400 hover:bg-zinc-800/50 transition">🏆 주주 랭킹 및 티어</button>
       </nav>
     </div>
-    
-    <div class="mt-6 pt-4 border-t border-border space-y-3">
-      <div id="auth-status" class="text-xs text-zinc-400">인증 상태: <span class="text-red-400 font-bold">미인증</span></div>
-      <button onclick="verifyStudent()" class="w-full bg-brand p-3 rounded-xl font-bold text-sm hover:opacity-90 transition">학생 인증하기</button>
+
+    <!-- 하단 인증 배지 모듈 -->
+    <div class="border-t border-border pt-4 space-y-2">
+      <div id="auth-status" class="text-xs text-zinc-400">인증 상태: <span class="text-red-400 font-bold">미인증 계정</span></div>
+      <button onclick="verifyStudent()" class="w-full bg-neon/10 hover:bg-neon/20 text-neon border border-neon/30 py-2 rounded-xl text-xs font-bold transition">학생 주주 인증받기</button>
     </div>
   </aside>
 
-  <main class="flex-1 p-6 max-w-2xl mx-auto w-full">
+  <!-- 메인 핵심 워크스페이스 -->
+  <main class="flex-1 p-4 md:p-6 max-w-4xl mx-auto w-full space-y-6 min-w-0">
+    
+    <!-- 탭 1: 피드 컴포넌트 -->
     <section id="feed-section" class="space-y-6">
-      <div class="flex gap-2 overflow-x-auto pb-2 text-xs font-bold">
-        <button class="bg-zinc-800 px-3 py-1.5 rounded-full text-neon">전체</button>
-        <button class="bg-surface border border-border px-3 py-1.5 rounded-full text-zinc-400">국내주식</button>
-        <button class="bg-surface border border-border px-3 py-1.5 rounded-full text-zinc-400">해외주식</button>
-        <button class="bg-surface border border-border px-3 py-1.5 rounded-full text-zinc-400">질문</button>
+      <div class="bg-surface p-5 rounded-2xl border border-border space-y-4">
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input id="postTitle" type="text" placeholder="분석할 종목이나 핵심 이슈 제목을 적어주세요." class="flex-1 bg-zinc-900 border border-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-neon">
+          <select id="postCategory" class="bg-zinc-900 border border-border rounded-xl px-3 py-2.5 text-sm text-zinc-300 focus:outline-none focus:border-neon cursor-pointer">
+            <option value="general">일반토론</option>
+            <option value="domestic">국내주식</option>
+            <option value="global">해외주식</option>
+            
+          </select>
+        </div>
+        <textarea id="postContent" rows="3" placeholder="집단지성을 위한 세부 분석 내용을 공유해 주세요." class="w-full bg-zinc-900 border border-border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon resize-none"></textarea>
+        
+        <!-- 🔥 신규: 투표 추가 컴포넌트 -->
+        <div class="bg-zinc-900/60 p-3 rounded-xl border border-border space-y-2">
+          <div class="text-xs font-bold text-zinc-400 flex items-center gap-1">📊 실시간 시장 예측 투표 첨부 (선택)</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input id="pollOption1" type="text" placeholder="선택지 1" class="bg-zinc-950 border border-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-neon">
+            <input id="pollOption2" type="text" placeholder="선택지 2" class="bg-zinc-950 border border-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-neon">
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button onclick="addPost()" class="bg-neon hover:bg-emerald-600 text-zinc-950 px-6 py-2 rounded-xl text-sm font-bold transition shadow-lg shadow-neon/10">포스팅하기</button>
+        </div>
       </div>
 
-      <div class="bg-surface p-4 rounded-2xl border border-border space-y-3">
-        <input id="postTitle" type="text" placeholder="제목을 입력하세요" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-brand">
-        <textarea id="postContent" placeholder="오늘 어떤 종목을 보셨나요?" rows="2" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-brand resize-none"></textarea>
-        <div class="flex justify-end">
-          <button onclick="addPost()" class="bg-brand text-white px-5 py-2 rounded-xl text-sm font-bold">게시하기</button>
-        </div>
+      <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <button id="cat-all" onclick="filterCategory('all')" class="bg-zinc-800 px-4 py-1.5 rounded-full text-xs text-neon font-bold whitespace-nowrap transition">전체보기</button>
+        <button id="cat-domestic" onclick="filterCategory('domestic')" class="bg-surface border border-border px-4 py-1.5 rounded-full text-xs text-zinc-400 whitespace-nowrap transition">국내주식</button>
+        <button id="cat-global" onclick="filterCategory('global')" class="bg-surface border border-border px-4 py-1.5 rounded-full text-xs text-zinc-400 whitespace-nowrap transition">해외주식</button>
+        
       </div>
 
       <div id="feed" class="space-y-4"></div>
     </section>
 
-    <section id="diary-section" class="space-y-6 hidden">
-      <h2 class="text-xl font-black">📝 나의 투자일기</h2>
-      <div class="bg-surface p-4 rounded-2xl border border-border space-y-3">
-        <div class="grid grid-cols-2 gap-3">
-          <input id="diaryProfit" type="number" placeholder="수익률 (%) 예: 5.5" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none">
-          <input id="diaryTitle" type="text" placeholder="일기 제목" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none">
-        </div>
-        <textarea id="diaryContent" placeholder="오늘의 투자 반성 노트를 작성해보세요." rows="2" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none resize-none"></textarea>
-        <button onclick="addDiary()" class="w-full bg-neon text-zinc-950 py-2.5 rounded-xl text-sm font-bold">일기 기록 저장</button>
+    <!-- 🔥 탭 2: 다이렉트 메시지 (DM) 컴포넌트 (신규 추가) -->
+    <section id="dm-section" class="grid grid-cols-1 md:grid-cols-3 gap-4 hidden min-h-[450px]">
+      <!-- 대화방 목록 -->
+      <div class="bg-surface rounded-2xl border border-border overflow-hidden flex flex-col">
+        <div class="p-3.5 border-b border-border bg-zinc-900/40 font-bold text-xs text-zinc-300">채팅방 목록</div>
+        <div id="dm-rooms-list" class="divide-y divide-border/60 overflow-y-auto flex-1 no-scrollbar"></div>
       </div>
-      <div id="diary-list" class="grid grid-cols-1 gap-3"></div>
+      <!-- 메시지 창 -->
+      <div class="md:col-span-2 bg-surface rounded-2xl border border-border flex flex-col overflow-hidden">
+        <div id="dm-window-header" class="p-3.5 border-b border-border bg-zinc-900/40 font-bold text-sm text-neon">대화를 선택해 주세요.</div>
+        <div id="dm-messages-box" class="p-4 flex-1 overflow-y-auto space-y-3 text-xs min-h-[300px] max-h-[350px] no-scrollbar bg-zinc-950/30">
+          <p class="text-zinc-600 text-center italic pt-24">상단의 유저 프로필 옆 [DM] 버튼이나 왼쪽 목록을 통해 대화를 시작하세요.</p>
+        </div>
+        <div class="p-3 border-t border-border bg-zinc-900/20 flex gap-2">
+          <input id="dmInput" type="text" placeholder="메시지를 입력하세요..." disabled class="flex-1 bg-zinc-900 border border-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-neon disabled:opacity-50">
+          <button id="dmSendBtn" onclick="sendDirectMessage()" disabled class="bg-neon hover:bg-emerald-600 text-zinc-950 text-xs font-bold px-4 py-2 rounded-xl transition disabled:opacity-50">전송</button>
+        </div>
+      </div>
     </section>
 
-    <section id="ranking-section" class="space-y-6 hidden">
-      <h2 class="text-xl font-black">🏆 학생 주주 활동 랭킹</h2>
-      <div class="bg-surface rounded-2xl border border-border divide-y divide-border">
-        <div class="p-4 flex justify-between items-center"><span class="font-bold text-neon">1위🥇 김개미</span><span class="text-xs text-zinc-400">활동점수 2,450p</span></div>
-        <div class="p-4 flex justify-between items-center"><span class="font-bold text-zinc-300">2위🥈 스톡킹</span><span class="text-xs text-zinc-400">활동점수 1,890p</span></div>
-        <div class="p-4 flex justify-between items-center"><span class="font-bold text-zinc-400">3위🥉 비트중딩</span><span class="text-xs text-zinc-400">활동점수 1,200p</span></div>
+    <!-- 탭 3: 투자 일기 컴포넌트 -->
+    <section id="diary-section" class="space-y-6 hidden">
+      <div class="bg-surface p-5 rounded-2xl border border-border space-y-4">
+        <h2 class="text-lg font-bold text-zinc-100 flex items-center gap-2">📝 실시간 매매 복기 일지</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input id="diaryTitle" type="text" placeholder="투자 종목명 (예: 삼성전자 매수)" class="bg-zinc-900 border border-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-neon">
+          <input id="diaryProfit" type="number" step="0.01" placeholder="수익률 또는 등락률 (%) 예: 3.45" class="bg-zinc-900 border border-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-neon">
+        </div>
+        <textarea id="diaryContent" rows="3" placeholder="매매 타점 분석 및 멘탈 관리에 대해 기록해보세요." class="w-full bg-zinc-900 border border-border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon resize-none"></textarea>
+        <div class="flex justify-end">
+          <button onclick="addDiary()" class="bg-zinc-700 hover:bg-zinc-600 text-white px-5 py-2 rounded-xl text-sm font-bold transition">로그 저장</button>
+        </div>
       </div>
+      <div id="diary-list" class="space-y-3"></div>
+    </section>
+
+    <!-- 탭 4: 주말 모의투자 대회 컴포넌트 -->
+    <section id="weekend-section" class="space-y-6 hidden">
+      <div class="bg-gradient-to-br from-purple-950/40 to-surface p-6 rounded-2xl border border-purple-500/30 space-y-4 text-left">
+        <div class="flex justify-between items-center flex-wrap gap-2">
+          <div>
+            <h2 class="text-xl font-black text-purple-400 flex items-center gap-2">🎮 주말 한정 가상 모의투자 대항전</h2>
+            <p class="text-xs text-zinc-400 mt-1">정규 장이 닫힌 주말에만 열리는 특별 리그! 가상 종목을 트레이딩하여 순위권 보상을 획득하세요.</p>
+          </div>
+          <button onclick="endWeekendTournament()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-purple-600/20">🏆 대회 마감 및 차등 정산</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div class="bg-zinc-900 p-4 rounded-xl border border-border flex justify-between items-center">
+            <div>
+              <span class="text-xs text-zinc-500 font-bold">가상 하이테크 종목</span>
+              <h4 class="font-bold text-base text-zinc-100">STALK 전자 (가상)</h4>
+              <p class="text-xs font-mono mt-0.5 text-red-400" id="stock-price-1">68,500원 (+2.4%)</p>
+            </div>
+            <div class="flex gap-1">
+              <button onclick="tradeVirtualStock('STALK 전자', 5)" class="bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded-lg font-bold transition">매수</button>
+              <button onclick="tradeVirtualStock('STALK 전자', -5)" class="bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 text-xs px-3 py-2 rounded-lg font-bold transition">매도</button>
+            </div>
+          </div>
+
+          <div class="bg-zinc-900 p-4 rounded-xl border border-border flex justify-between items-center">
+            <div>
+              <span class="text-xs text-zinc-500 font-bold">가상 이노베이션 종목</span>
+              <h4 class="font-bold text-base text-zinc-100">스토킹 스페이스 (가상)</h4>
+              <p class="text-xs font-mono mt-0.5 text-blue-400" id="stock-price-2">12,400원 (-1.8%)</p>
+            </div>
+            <div class="flex gap-1">
+              <button onclick="tradeVirtualStock('스토킹 스페이스', 5)" class="bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded-lg font-bold transition">매수</button>
+              <button onclick="tradeVirtualStock('스토킹 스페이스', -5)" class="bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 text-xs px-3 py-2 rounded-lg font-bold transition">매도</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-zinc-900/60 p-4 rounded-xl border border-border/60 flex justify-between items-center font-mono text-xs">
+          <div>내 가상 리그 수익률: <span id="my-virtual-profit" class="text-neon font-bold">+0.00%</span></div>
+          <div>모의투자 누적 손익: <span id="my-virtual-money" class="text-zinc-300">0원</span></div>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-2xl border border-border overflow-hidden">
+        <div class="p-4 border-b border-border bg-zinc-900/40">
+          <h3 class="text-sm font-bold text-purple-400 flex items-center gap-1.5">📊 현재 가상 대회 실시간 스코어보드</h3>
+        </div>
+        <div id="weekend-leaderboard" class="divide-y divide-border"></div>
+      </div>
+    </section>
+
+    <!-- 탭 5: 랭킹 및 리더보드 -->
+    <section id="ranking-section" class="bg-surface rounded-2xl border border-border overflow-hidden hidden">
+      <div class="p-5 border-b border-border bg-gradient-to-r from-surface to-zinc-900">
+        <h2 class="text-lg font-bold text-zinc-100">🏆 STALK 실시간 탑 트레이더 리더보드</h2>
+        <p class="text-xs text-zinc-400 mt-1">포스팅, 댓글, 인게이지먼트 및 소셜 네트워킹 스코어를 연산한 종합 리스트입니다.</p>
+      </div>
+      <div id="ranking-list" class="divide-y divide-border"></div>
     </section>
   </main>
 
-  <aside class="w-full md:w-72 p-6 space-y-6 border-t md:border-l border-border">
-    <div class="bg-surface p-4 rounded-2xl border border-border">
-      <h3 class="text-sm font-bold mb-2 flex items-center gap-1.5">🔔 알림</h3>
-      <div class="text-xs text-zinc-400 space-y-2">
-        <p>❤️ '김개미'님이 내 게시글을 좋아합니다.</p>
-        <p>💬 '스톡킹'님이 댓글을 남겼습니다.</p>
-      </div>
-    </div>
-    <div class="bg-zinc-900 border border-dashed border-zinc-700 rounded-2xl p-6 text-center text-xs text-zinc-500">
-      <p class="font-bold mb-1">📢 학생 맞춤 경제 배너 광고</p>
-      <p>문의: stalk@example.com</p>
+  <!-- 오른쪽 실시간 시스템 로그 및 인텔리전스 위젯 -->
+  <aside class="w-full md:w-64 bg-surface p-5 border-t md:border-t-0 md:border-l border-border space-y-4 shrink-0">
+    <h3 class="text-sm font-bold text-zinc-400 flex items-center gap-1.5">🔔 실시간 액티비티 피드</h3>
+    <div id="notification-box" class="bg-zinc-900/50 p-3 rounded-xl border border-border h-48 md:h-64 overflow-y-auto text-xs space-y-2 text-zinc-400 no-scrollbar">
+      <p class="italic text-zinc-600 text-center pt-20">대기 중인 새 알림이 없습니다.</p>
     </div>
   </aside>
+</div>
+</aside>
+</div> <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-end gap-3 p-2 bg-[#120F17] border border-[#222] rounded-2xl shadow-2xl z-50">
+  
+  <button onclick="showSection('feed-section')" class="p-3 bg-zinc-800 rounded-xl hover:-translate-y-2 transition-transform cursor-pointer">🔥</button>
+  
+  <button onclick="showSection('diary-section')" class="p-3 bg-zinc-800 rounded-xl hover:-translate-y-2 transition-transform cursor-pointer">📝</button>
+  
+  <button onclick="showSection('debate-section')" class="p-3 bg-zinc-800 rounded-xl hover:-translate-y-2 transition-transform cursor-pointer">🗣</button>
+  
+  <button onclick="showSection('quiz-section')" class="p-3 bg-zinc-800 rounded-xl hover:-translate-y-2 transition-transform cursor-pointer">🧠</button>
+  
+  <button onclick="showSection('weekend-section')" class="p-3 bg-zinc-800 rounded-xl hover:-translate-y-2 transition-transform cursor-pointer">🎮</button>
+</div>00 p-6 rounded-2xl">
+  <h2 class="text-xl font-bold text-emerald-400">주말 모의투자 대회</h2>
+  <p class="text-zinc-400 mt-2">이번 주말 수익률 1위에 도전하세요!</p>
+  <button onclick="joinTournament()" class="mt-4 bg-emerald-600 px-6 py-2 rounded-xl">대회 참가하기</button>
+</section>
 
-  <script src="script.js"></script>
-</body>
-</html>
+<button onclick="showSection('weekend-section')" class="p-3 bg-zinc-800 rounded-xl hover:-translate-y-2 transition-transform">🎮</button>
+
+<section id="debate-section" class="hidden bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
+  <h2 class="font-bold text-emerald-400 mb-4">🗣 종목 토론방</h2>
+  <div id="debate-list" class="h-64 overflow-y-auto mb-4 bg-black p-4 rounded-xl text-sm"></div>
+  <div class="flex gap-2">
+    <input id="debateInput" class="flex-1 bg-black p-2 rounded-lg border border-zinc-700" placeholder="의견을 입력하세요...">
+    <button onclick="saveDebate()" class="bg-emerald-600 px-4 rounded-lg font-bold">등록</button>
+  </div>
+</section>
+
+<section id="quiz-section" class="hidden bg-zinc-900 p-6 rounded-2xl border border-zinc-800 text-center">
+  <h2 class="font-bold text-emerald-400 mb-4">🧠 경제 퀴즈 챌린지</h2>
+  <div id="quiz-box" class="py-10 text-xl font-bold bg-black rounded-xl mb-6">
+    Q: 주식 시장에서 시가총액이 가장 큰 회사는?
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <button onclick="checkQuiz(true)" class="bg-emerald-800 p-4 rounded-xl font-bold">삼성전자</button>
+    <button onclick="checkQuiz(false)" class="bg-red-800 p-4 rounded-xl font-bold">기타</button>
+  </div>
+</section>
