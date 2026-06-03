@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>STALK — 토스증권형 청소년 주식 리그</title>
+    
+    <!-- 필수 코어 자원 에셋 (CDN 결성 및 무결성 검증) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app-container">
+
+    <!-- 0. 글로벌 최상위 토스트 알림 크레이들 -->
+    <div id="global-toast" class="toss-toast hidden">
+        <div class="toast-body">
+            <span class="toast-icon">✨</span>
+            <span id="toast-text">안내 메시지</span>
+        </div>
+    </div>
+
+    <!-- [SCREEN 1] 하이엔드 온보딩 및 인증 스크린 -->
+    <div id="screen-auth" class="screen layout-auth">
+        <div class="auth-grid-frame">
+            <div class="auth-header-zone">
+                <div class="brand-badge-glow">STALK</div>
+                <h1 class="auth-main-headline">대한민국 청소년<br><span class="gradient-text-accent">실시간 주식 리그</span></h1>
+                <p class="auth-sub-headline">토스증권 커뮤니티 감성 그대로, 우리들만의 자산 형성 리그</p>
+            </div>
+            
+            <!-- 로그인 폼 세션 -->
+            <div id="session-login" class="auth-interactive-card">
+                <div class="input-floating-group">
+                    <input type="text" id="login-id" class="toss-smooth-input" placeholder=" " autocomplete="off">
+                    <label>아이디를 입력하세요</label>
+                </div>
+                <div class="input-floating-group">
+                    <input type="password" id="login-pw" class="toss-smooth-input" placeholder=" ">
+                    <label>비밀번호</label>
+                </div>
+                <button class="toss-action-button type-primary" onclick="processLogin()">시작하기</button>
+                <div class="auth-mode-switcher" onclick="switchAuthView(false)">처음 오셨나요? 3초만에 가입하기</div>
+            </div>
+            
+            <!-- 회원가입 폼 세션 (초기 숨김) -->
+            <div id="session-register" class="auth-interactive-card hidden">
+                <div class="input-floating-group">
+                    <input type="text" id="reg-id" class="toss-smooth-input" placeholder=" " autocomplete="off">
+                    <label>사용할 아이디</label>
+                </div>
+                <div class="input-floating-group">
+                    <input type="text" id="reg-nick" class="toss-smooth-input" placeholder=" " autocomplete="off">
+                    <label>닉네임 (예: 삼전부수기)</label>
+                </div>
+                <div class="select-floating-group">
+                    <select id="reg-age" class="toss-smooth-select">
+                        <option value="14">중학교 1학년 (14세)</option>
+                        <option value="15">중학교 2학년 (15세)</option>
+                        <option value="16" selected>중학교 3학년 (16세)</option>
+                        <option value="17">고등학교 1학년 (17세)</option>
+                        <option value="18">고등학교 2학년 (18세)</option>
+                        <option value="19">고등학교 3학년 (19세)</option>
+                    </select>
+                    <label>나이 설정</label>
+                </div>
+                
+                <div class="security-info-banner">
+                    <div class="shield-pulse-icon"><i class="fas fa-shield-halved"></i></div>
+                    <p>학생들의 안전한 소통을 위해 비정상 유저는 실시간 AI 트래킹 시스템에 의해 자동 격리 조치됩니다.</p>
+                </div>
+                
+                <button class="toss-action-button type-primary" onclick="processRegister()">동물 주주 가입하고 칩 받기</button>
+                <div class="auth-mode-switcher" onclick="switchAuthView(true)">이미 계정이 있으신가요? 로그인하기</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- [SCREEN 2] 메인 서비스 앱 시스템 가동 -->
+    <div id="screen-main" class="screen hidden">
+        
+        <!-- 고정형 상단 프리미엄 헤더 바 -->
+        <header class="app-global-header">
+            <div class="header-logo-section">
+                <span class="logo-text">STALK</span>
+                <span class="live-status-dot"></span>
+            </div>
+            <div class="header-interaction-section">
+                <button class="header-circle-btn" id="theme-toggler-btn" onclick="toggleInterfaceTheme()" aria-label="테마 스위칭">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="header-circle-btn logout-type" onclick="processLogout()" aria-label="로그아웃">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 토스증권형 무한 가로 슬라이더 레이아웃 코어 -->
+        <main class="app-view-viewport-slider" id="app-main-viewport">
+            
+            <!-- PAGE 1: 토스증권형 주주 커뮤니티 피드 -->
+            <section id="view-feed" class="view-page-frame">
+                <!-- 실시간 인기 급상승 토크 칩 (실제 토스증권 UI 완벽 매칭) -->
+                <div class="stock-ticker-ribbon">
+                    <div class="ticker-chip status-up" onclick="applyStockFilter('삼성전자')">
+                        <span class="stock-name">삼성전자</span><span class="stock-rate">+2.34%</span>
+                    </div>
+                    <div class="ticker-chip status-down" onclick="applyStockFilter('테슬라')">
+                        <span class="stock-name">테슬라</span><span class="stock-rate">-1.82%</span>
+                    </div>
+                    <div class="ticker-chip status-up" onclick="applyStockFilter('엔비디아')">
+                        <span class="stock-name">엔비디아</span><span class="stock-rate">+6.18%</span>
+                    </div>
+                    <div class="ticker-chip status-stable" onclick="applyStockFilter('애플')">
+                        <span class="stock-name">애플</span><span class="stock-rate">0.00%</span>
+                    </div>
+                </div>
+
+                <!-- 토스식 스마트 포스트 컴포저 -->
+                <div class="toss-premium-card composer-container">
+                    <input type="text" id="post-title" class="composer-title-field" placeholder="어떤 주식 이야기를 나눠볼까요?" autocomplete="off">
+                    <textarea id="post-content" class="composer-body-field" placeholder="오늘 매수한 종목이나 친구들과 공유하고 싶은 투자 인사이트를 들려주세요."></textarea>
+                    
+                    <!-- 차별화 기능: 실시간 주주 투표 아키텍처 -->
+                    <div class="composer-vote-builder">
+                        <div class="builder-headline"><i class="fas fa-chart-pie"></i> 실시간 주주 투표 생성 (선택)</div>
+                        <div class="builder-inputs-grid">
+                            <input type="text" id="vote-opt-a" class="vote-mini-input" placeholder="선택지 1 (예: 내일 무조건 떡상)">
+                            <input type="text" id="vote-opt-b" class="vote-mini-input" placeholder="선택지 2 (예: 지금은 관망해야함)">
+                        </div>
+                    </div>
+                    
+                    <div class="composer-action-line">
+                        <span class="reward-notice-badge">🪙 작성 보상 +20P</span>
+                        <button class="toss-action-button type-primary size-sm" onclick="createNewPost()">피드 게시하기</button>
+                    </div>
+                </div>
+
+                <!-- 동적 타임라인 렌더링 크레이들 -->
+                <div id="feed-render-anchor" class="dynamic-stream-container"></div>
+            </section>
+
+            <!-- PAGE 2: 1:1 암호화 비밀 대화 (메시지) -->
+            <section id="view-dm" class="view-page-frame">
+                <h2 class="view-section-headline">비밀 메시지</h2>
+                <div class="toss-premium-card list-container">
+                    <div class="chat-row-item" onclick="launchDirectMessage('한강뷰갈중3', '🐯')">
+                        <div class="chat-row-avatar-sphere">🐯</div>
+                        <div class="chat-row-main-content">
+                            <div class="chat-row-title-line">
+                                <span class="chat-row-name">한강뷰갈중3</span>
+                                <span class="chat-row-time">방금 전</span>
+                            </div>
+                            <p class="chat-row-preview">이번 주말 모의투자 토너먼트 같이 연합 짤래? 나 확실한 테마주 소스 있어.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 3: 오답노트형 투자 일기 -->
+            <section id="view-diary" class="view-page-frame">
+                <div class="toss-premium-card variant-gradient-banner">
+                    <div class="banner-label-top">나의 최고 누적 수익률</div>
+                    <div class="banner-value-giant">+28.40%</div>
+                    <p class="banner-desc-bottom">전국 또래 주주들 중에서 상위 4.2% 이내에 위치하고 있어요! 🏆</p>
+                </div>
+
+                <div class="toss-premium-card">
+                    <h3 class="card-inner-headline">오늘의 투자 오답노트 기록</h3>
+                    <div class="input-floating-group style-margin">
+                        <input type="number" id="diary-yield" class="toss-smooth-input" placeholder=" ">
+                        <label>오늘 달성한 수익률 (%) 입력</label>
+                    </div>
+                    <div class="textarea-floating-group">
+                        <textarea id="diary-note" class="toss-smooth-textarea" placeholder=" "></textarea>
+                        <label>어떤 심리적 요인과 지표로 매매했는지 미래의 나를 위해 기록하세요.</label>
+                    </div>
+                    <button class="toss-action-button type-primary" onclick="commitInvestmentDiary()">기록 저장 후 칩 받기</button>
+                </div>
+
+                <div id="diary-render-anchor" class="dynamic-stream-container"></div>
+            </section>
+
+            <!-- PAGE 4: 주말 모의투자 실시간 토너먼트 리그 -->
+            <section id="view-contest" class="view-page-frame">
+                <div class="toss-premium-card variant-dark-exclusive">
+                    <div class="contest-info-flex">
+                        <div class="contest-left-text">
+                            <span class="live-pulse-badge">LIVE TOURNAMENT</span>
+                            <h3 class="contest-headline">제12회 주말 청소년 가상 투자 리그</h3>
+                            <p class="contest-duration-sub">매주 토요일 09:00 ~ 일요일 18:00 (실시간 호가 연동)</p>
+                        </div>
+                        <div class="contest-trophy-icon"><i class="fas fa-trophy"></i></div>
+                    </div>
+                    <div class="contest-prize-ribbon">🏆 이번 주 최종 리그 우승 상품: 맘스터치 싸이버거 세트 🍔</div>
+                </div>
+
+                <h2 class="view-section-headline" style="margin-top: 28px;">실시간 전국 주주 학생 랭킹</h2>
+                <div class="toss-premium-card no-padding">
+                    <div id="ranking-render-anchor" class="ranking-board-table"></div>
+                </div>
+            </section>
+
+            <!-- PAGE 5: 마이페이지 & 포인트 칩 상점 -->
+            <section id="view-profile" class="view-page-frame">
+                <div class="toss-premium-card profile-hero-card">
+                    <div class="profile-avatar-container">
+                        <div id="my-avatar-sphere" class="profile-giant-emoji-avatar">🐱</div>
+                        <button class="avatar-shuffle-trigger" onclick="shuffleMyAvatar()" aria-label="프로필 변경">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="profile-identity-group">
+                        <div class="identity-name-row">
+                            <h2 id="my-nick-display" class="profile-name-text">-</h2>
+                            <span id="my-age-display" class="profile-age-tag">-세</span>
+                        </div>
+                        <div id="my-chips-display" class="profile-chips-balance">🪙 0 Chips</div>
+                    </div>
+                </div>
+
+                <div class="profile-stats-twin-grid">
+                    <div class="toss-premium-card stat-item">
+                        <span class="num-val" id="count-followers">48</span>
+                        <span class="label-txt">팔로워</span>
+                    </div>
+                    <div class="toss-premium-card stat-item">
+                        <span class="num-val">29</span>
+                        <span class="label-txt">팔로잉</span>
+                    </div>
+                </div>
+
+                <h2 class="view-section-headline"><i class="fas fa-store shop-icon"></i>포인트 리워드 숍</h2>
+                <div class="reward-store-grid">
+                    <div class="store-product-card" onclick="purchaseRewardItem('네이버페이 포인트 5,000원권', 1500)">
+                        <div class="product-visual-box color-npay">N Pay</div>
+                        <div class="product-meta">
+                            <span class="p-title">네이버페이 5,000원권</span>
+                            <span class="p-price">1,500 Chips</span>
+                        </div>
+                    </div>
+                    <div class="store-product-card" onclick="purchaseRewardItem('맘스터치 싸이버거 세트', 2000)">
+                        <div class="product-visual-box color-burger">🍔</div>
+                        <div class="product-meta">
+                            <span class="p-title">싸이버거 기프티콘</span>
+                            <span class="p-price">2,000 Chips</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- 🌟 하이엔드 토스 스타일 마이크로 애니메이션 하단 독 네비게이션 -->
+        <nav class="app-global-navigation-dock-wrapper">
+            <div class="app-navigation-dock">
+                <div class="navigation-cell active" onclick="switchActiveTab('feed', 0, this)">
+                    <div class="icon-sphere"><i class="fas fa-compass"></i></div>
+                    <span class="cell-label">피드</span>
+                </div>
+                <div class="navigation-cell" onclick="switchActiveTab('dm', 1, this)">
+                    <div class="icon-sphere"><i class="fas fa-comment-dots"></i></div>
+                    <span class="cell-label">메시지</span>
+                </div>
+                <div class="navigation-cell" onclick="switchActiveTab('diary', 2, this)">
+                    <div class="icon-sphere"><i class="fas fa-book"></i></div>
+                    <span class="cell-label">투자일기</span>
+                </div>
+                <div class="navigation-cell" onclick="switchActiveTab('contest', 3, this)">
+                    <div class="icon-sphere"><i class="fas fa-trophy"></i></div>
+                    <span class="cell-label">리그대회</span>
+                </div>
+                <div class="navigation-cell" onclick="switchActiveTab('profile', 4, this)">
+                    <div class="icon-sphere"><i class="fas fa-user-circle"></i></div>
+                    <span class="cell-label">마이</span>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- [MODAL LAYER 1] 1:1 토스 대화창 모달 시스템 -->
+    <div id="modal-chat-layer" class="toss-full-modal-overlay">
+        <div class="chat-window-container">
+            <header class="app-global-header modal-type">
+                <button class="modal-close-btn" onclick="terminateChatSession()"><i class="fas fa-chevron-left"></i></button>
+                <div class="modal-header-identity">
+                    <span id="chat-target-avatar" class="mini-avatar">🐯</span>
+                    <span id="chat-target-name" class="name">채팅방</span>
+                </div>
+                <div style="width: 32px;"></div>
+            </header>
+            <div id="chat-bubble-stream-viewport" class="chat-bubble-stream"></div>
+            <div class="chat-input-sticky-dock">
+                <input type="text" id="chat-input-field" class="chat-inline-input" placeholder="비밀 대화를 시작해보세요." onkeypress="if(event.key==='Enter') dispatchDirectMessage()">
+                <button class="chat-dispatch-btn" onclick="dispatchDirectMessage()"><i class="fas fa-arrow-up"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- [MODAL LAYER 2] 토스 스타일 모던 하단 시트 팝업 알림 -->
+    <div id="modal-sheet-layer" class="toss-bottom-sheet-overlay" onclick="closeBottomSheetModal()">
+        <div class="toss-bottom-sheet-window" onclick="event.stopPropagation()">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-inner-content-wrapper">
+                <div class="sheet-feedback-icon-sphere" id="sheet-icon-box">✓</div>
+                <h4 class="sheet-title-text" id="sheet-headline-display">신고 및 제어 접수 완료</h4>
+                <p class="sheet-paragraph-text" id="sheet-body-display">운영 검토가 즉각적으로 반영됩니다.</p>
+                <button class="toss-action-button type-primary" onclick="closeBottomSheetModal()" style="margin-top: 14px;">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- [MODAL LAYER 3] 신규 계정 가입 환영 액션 시트 -->
+    <div id="modal-welcome-layer" class="toss-bottom-sheet-overlay">
+        <div class="toss-bottom-sheet-window">
+            <div class="sheet-inner-content-wrapper" style="padding-top: 12px;">
+                <div class="sheet-feedback-icon-sphere status-success">🎁</div>
+                <h4 class="sheet-title-text">청소년 정식 주주 등록 완료!</h4>
+                <p class="sheet-paragraph-text">환영합니다! 안전한 학생 커뮤니티 리그 진입을 축하하며 가입 축하금 <strong>500 Chips</strong>를 계좌로 즉시 발급해 드렸어요.</p>
+                <button class="toss-action-button type-primary" onclick="dismissWelcomeSheetAndBoot()">리그 거래소 입장하기</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 🌟 깃허브 절대경로/소소문자 완전 격파용 고고도 인라인 스크립트 엔진 코어 -->
+<script>
+const StorageEngine = {
+    fetch(key, fallback) {
+        try {
+            const data = localStorage.getItem(`stalk_prod_${key}`);
+            return data ? JSON.parse(data) : fallback;
+        } catch(e) { return fallback; }
+    },
+    save(key, val) {
+        try { localStorage.setItem(`stalk_prod_${key}`, JSON.stringify(val)); } catch(e) {}
+    }
+};
+
+// 고해상도 벡터 폰트 이모티콘 데이터베이스 팩
+const animalEmojis = ["🐱", "🦊", "🐼", "🐨", "🐰", "🐶", "🐯", "🦁", "🐻", "🐵"];
+
+const fallbackFeeds = [
+    { id: 101, user: '익명여우선배', emoji: animalEmojis[1], age: 18, title: '엔비디아 주가 포지션 공유한다 📈', content: '데이터 분석 결과 강력 지지선 확실하게 확보된 구조야. 이번 라운드 리그 상위권 타겟팅하는 친구들은 지금 분할로 담아두는게 핵심 포인트일 듯.', likes: 142, liked: false, saved: false, tag: '엔비디아', poll: { optA: '나도 무조건 풀매수 포지션', optB: '리스크 관리차원 관망 유지', votesA: 92, votesB: 21 } },
+    { id: 102, user: '한강뷰갈중3', emoji: animalEmojis[6], age: 16, title: '이번 주말 모의투자 토너먼트 팀원 스카웃함', content: '저번 11회차 리그 랭킹권 정밀 매매 기법 구사하는 고수 급식 주주들 한 명만 와라. 치킨 기프티콘 쉐어 보장함.', likes: 58, liked: false, saved: false, tag: '삼성전자', poll: null }
+];
+
+const fallbackDiaries = [
+    { id: 201, date: '2026-06-03', yieldRate: 5.23, text: '삼성전자 주주 토크방 여론 지표 분석 역발상 타점 유효했음. 오답노트 작성하면서 리스크 오버 트레이딩 억제 효과 톡톡히 보는 중.' }
+];
+
+const fallbackRankings = [
+    { rank: 1, name: '주식천재판다', age: 19, rate: 84.12, progress: 95, emoji: animalEmojis[2] },
+    { rank: 2, name: '한강뷰갈중3', age: 16, rate: 41.52, progress: 68, emoji: animalEmojis[6] },
+    { rank: 3, name: '급식투자왕토끼', age: 18, rate: 22.10, progress: 42, emoji: animalEmojis[4] }
+];
+
+let globalState = StorageEngine.fetch('state', null);
+let runtimeFeeds = StorageEngine.fetch('feeds', fallbackFeeds);
+let runtimeDiaries = StorageEngine.fetch('diaries', fallbackDiaries);
+let runtimeRankings = StorageEngine.fetch('rankings', fallbackRankings);
+let runtimeVotes = new Set(StorageEngine.fetch('votes', []));
+let runtimeTheme = StorageEngine.fetch('theme', 'light');
+
+window.addEventListener('DOMContentLoaded', () => {
+    document.documentElement.setAttribute('data-theme', runtimeTheme);
+    const toggler = document.getElementById('theme-toggler-btn');
+    if(toggler) toggler.innerHTML = runtimeTheme === 'light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+    
+    if (globalState) {
+        bootApplicationPipeline();
+    } else {
+        document.getElementById('screen-auth').classList.remove('hidden');
+        document.getElementById('screen-main').classList.add('hidden');
+    }
+});
+
+function switchAuthView(showLogin) {
+    document.getElementById('session-login').classList.toggle('hidden', !showLogin);
+    document.getElementById('session-register').classList.toggle('hidden', showLogin);
+}
+
+function processRegister() {
+    const id = document.getElementById('reg-id').value.trim();
+    const nick = document.getElementById('reg-nick').value.trim();
+    const age = document.getElementById('reg-age').value;
+
+    if (!id || !nick) {
+        triggerToastNotification("⚠️ 모든 가입 정보를 양식에 맞게 입력하세요.");
+        return;
+    }
+
+    const assignedEmoji = animalEmojis[Math.floor(Math.random() * animalEmojis.length)];
+    globalState = { id, nick, age: parseInt(age), chips: 500, followers: 48, emoji: assignedEmoji };
+    StorageEngine.save('state', globalState);
+    document.getElementById('modal-welcome-layer').style.display = 'flex';
+}
+
+function dismissWelcomeSheetAndBoot() {
+    document.getElementById('modal-welcome-layer').style.display = 'none';
+    bootApplicationPipeline();
+}
+
+function processLogin() {
+    const id = document.getElementById('login-id').value.trim();
+    if (!id) {
+        triggerToastNotification("⚠️ 계정 정보를 정확하게 입력해 주세요.");
+        return;
+    }
+
+    globalState = { id, nick: '초보판다주주', age: 17, chips: 650, followers: 52, emoji: animalEmojis[2] };
+    StorageEngine.save('state', globalState);
+    bootApplicationPipeline();
+}
+
+function bootApplicationPipeline() {
+    document.getElementById('screen-auth').classList.add('hidden');
+    document.getElementById('screen-main').classList.remove('hidden');
+    syncProfileDomElements();
+    renderFeedTimeline();
+    renderLeagueRankings();
+    renderInvestmentDiaries();
+    
+    const initialCell = document.querySelector('.navigation-cell');
+    if(initialCell) switchActiveTab('feed', 0, initialCell);
+}
+
+function processLogout() {
+    localStorage.removeItem('stalk_prod_state');
+    globalState = null;
+    document.getElementById('screen-main').classList.add('hidden');
+    document.getElementById('screen-auth').classList.remove('hidden');
+}
+
+function toggleInterfaceTheme() {
+    runtimeTheme = runtimeTheme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', runtimeTheme);
+    StorageEngine.save('theme', runtimeTheme);
+    document.getElementById('theme-toggler-btn').innerHTML = runtimeTheme === 'light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+}
+
+function switchActiveTab(targetView, index, btnDom) {
+    const slider = document.getElementById('app-main-viewport');
+    if (slider) {
+        slider.style.transform = `translateX(-${index * 20}%)`;
+    }
+    document.querySelectorAll('.navigation-cell').forEach(c => c.classList.remove('active'));
+    btnDom.classList.add('active');
+}
+
+function syncProfileDomElements() {
+    if (!globalState) return;
+    document.getElementById('my-nick-display').innerText = globalState.nick;
+    document.getElementById('my-age-display').innerText = `${globalState.age}세`;
+    document.getElementById('my-chips-display').innerText = `🪙 ${globalState.chips} Chips`;
+    document.getElementById('count-followers').innerText = globalState.followers;
+    document.getElementById('my-avatar-sphere').innerText = globalState.emoji;
+}
+
+function shuffleMyAvatar() {
+    const current = globalState.emoji;
+    const filtered = animalEmojis.filter(e => e !== current);
+    const chosen = filtered[Math.floor(Math.random() * filtered.length)];
+    
+    globalState.emoji = chosen;
+    StorageEngine.save('state', globalState);
+    syncProfileDomElements();
+    triggerToastNotification("✨ 대표 동물 프로필이 정상적으로 변경되었습니다!");
+}
+
+function renderFeedTimeline() {
+    const anchor = document.getElementById('feed-render-anchor');
+    if(!anchor) return;
+    anchor.innerHTML = '';
+
+    runtimeFeeds.forEach(post => {
+        const item = document.createElement('div');
+        item.className = 'toss-premium-card feed-item-card';
+        
+        let voteMarkup = '';
+        if (post.poll) {
+            const sum = post.poll.votesA + post.poll.votesB || 1;
+            const rateA = Math.round((post.poll.votesA / sum) * 100);
+            const rateB = Math.round((post.poll.votesB / sum) * 100);
+            
+            voteMarkup = `
+                <div class="interactive-vote-container">
+                    <div class="vote-track-lane" onclick="castVoteSession(${post.id}, 'a')">
+                        <div class="vote-fill-progress" style="width: ${rateA}%"></div>
+                        <div class="vote-label-flex"><span>${post.poll.optA}</span><span>${rateA}% (${post.poll.votesA}표)</span></div>
+                    </div>
+                    <div class="vote-track-lane" onclick="castVoteSession(${post.id}, 'b')">
+                        <div class="vote-fill-progress" style="width: ${rateB}%"></div>
+                        <div class="vote-label-flex"><span>${post.poll.optB}</span><span>${rateB}% (${post.poll.votesB}표)</span></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        item.innerHTML = `
+            <div class="feed-item-top">
+                <div class="item-author-profile">
+                    <div class="author-emoji-avatar-mini">${post.emoji || '🐹'}</div>
+                    <div class="author-meta-block">
+                        <div class="author-title">${post.user} <span class="badge-age-mini">${post.age}세</span></div>
+                        <div class="author-subtxt">🔥 인증 주주방 : ${post.tag}</div>
+                    </div>
+                </div>
+                <button class="header-circle-btn size-compact" onclick="invokeReportModalSheet()"><i class="fas fa-ellipsis-v"></i></button>
+            </div>
+            <div class="feed-item-body">
+                <h3 class="body-headline">${post.title}</h3>
+                <p class="body-paragraph">${post.content}</p>
+            </div>
+            ${voteMarkup}
+            <div class="feed-item-footer-actions">
+                <button class="action-btn-trigger ${post.liked ? 'state-liked' : ''}" onclick="toggleLikeState(${post.id})"><i class="fas fa-heart"></i> ${post.likes}</button>
+                <button class="action-btn-trigger ${post.saved ? 'state-saved' : ''}" onclick="toggleBookmarkState(${post.id})"><i class="fas fa-bookmark"></i> 저장</button>
+                <button class="action-btn-trigger type-dm-connect" onclick="launchDirectMessage('${post.user}', '${post.emoji}')"><i class="fas fa-paper-plane"></i> 1:1 대화</button>
+            </div>
+        `;
+        anchor.appendChild(item);
+    });
+}
+
+function createNewPost() {
+    const title = document.getElementById('post-title').value.trim();
+    const content = document.getElementById('post-content').value.trim();
+    const opt1 = document.getElementById('vote-opt-a').value.trim();
+    const opt2 = document.getElementById('vote-opt-b').value.trim();
+
+    if (!title || !content) {
+        alert('토크 제목과 본문 내용을 적어주세요.');
+        return;
+    }
+
+    const payload = {
+        id: Date.now(),
+        user: globalState ? globalState.nick : '주주학생',
+        emoji: globalState ? globalState.emoji : animalEmojis[0],
+        age: globalState ? globalState.age : 17,
+        title: title,
+        content: content,
+        likes: 0, liked: false, saved: false,
+        tag: '자유토크방',
+        poll: (opt1 && opt2) ? { optA: opt1, optB: opt2, votesA: 1, votesB: 0 } : null
+    };
+
+    runtimeFeeds.unshift(payload);
+    if(globalState) globalState.chips += 20;
+    
+    StorageEngine.save('feeds', runtimeFeeds);
+    StorageEngine.save('state', globalState);
+
+    document.getElementById('post-title').value = '';
+    document.getElementById('post-content').value = '';
+    document.getElementById('vote-opt-a').value = '';
+    document.getElementById('vote-opt-b').value = '';
+
+    syncProfileDomElements();
+    renderFeedTimeline();
+    triggerToastNotification("📝 게시글 작성이 완료되어 20칩 리워드가 지급되었습니다.");
+}
+
+function toggleLikeState(id) {
+    const p = runtimeFeeds.find(f => f.id === id);
+    if(p) {
+        p.liked = !p.liked;
+        p.likes += p.liked ? 1 : -1;
+        StorageEngine.save('feeds', runtimeFeeds);
+        renderFeedTimeline();
+    }
+}
+
+function toggleBookmarkState(id) {
+    const p = runtimeFeeds.find(f => f.id === id);
+    if(p) {
+        p.saved = !p.saved;
+        StorageEngine.save('feeds', runtimeFeeds);
+        renderFeedTimeline();
+        triggerToastNotification(p.saved ? "📌 주주 보관함에 저장 완료" : "🗑️ 보관함에서 해제");
+    }
+}
+
+function applyStockFilter(stockName) {
+    triggerToastNotification(`📈 실시간 ${stockName} 주주 전용 스트림으로 동적 연결되었습니다.`);
+}
+
+function castVoteSession(id, optionKey) {
+    const uniqueKey = `${globalState ? globalState.id : 'guest'}-${id}`;
+    if (runtimeVotes.has(uniqueKey)) {
+        triggerToastNotification("❌ 해당 주주 투표에는 이미 참여하셨습니다.");
+        return;
+    }
+    const p = runtimeFeeds.find(f => f.id === id);
+    if (p && p.poll) {
+        if (optionKey === 'a') p.poll.votesA++;
+        else p.poll.votesB++;
+        
+        runtimeVotes.add(uniqueKey);
+        StorageEngine.save('feeds', runtimeFeeds);
+        StorageEngine.save('votes', Array.from(runtimeVotes));
+        renderFeedTimeline();
+        triggerToastNotification("🗳️ 주주 투표 결과가 원장에 실시간 반영되었습니다.");
+    }
+}
+
+function invokeReportModalSheet() {
+    document.getElementById('sheet-headline-display').innerText = "클린 커뮤니티 정화 완료";
+    document.getElementById('sheet-body-display').innerText = "토스증권 규정에 따라 유해 게시글은 실시간 기계학습 차단 필터에 의해 파기 대기 세션으로 이관됩니다.";
+    document.getElementById('modal-sheet-layer').style.display = 'flex';
+}
+
+function closeBottomSheetModal() { document.getElementById('modal-sheet-layer').style.display = 'none'; }
+
+function commitInvestmentDiary() {
+    const rate = document.getElementById('diary-yield').value;
+    const note = document.getElementById('diary-note').value.trim();
+
+    if (!rate || !note) {
+        alert('오늘의 매매 수익률과 복기 노트를 채워주세요.');
+        return;
+    }
+
+    runtimeDiaries.unshift({
+        id: Date.now(),
+        date: new Date().toISOString().slice(0, 10),
+        yieldRate: parseFloat(rate),
+        text: note
+    });
+
+    if(globalState) globalState.chips += 30;
+    
+    StorageEngine.save('diaries', runtimeDiaries);
+    StorageEngine.save('state', globalState);
+
+    document.getElementById('diary-yield').value = '';
+    document.getElementById('diary-note').value = '';
+
+    syncProfileDomElements();
+    renderInvestmentDiaries();
+    triggerToastNotification("📒 매매 오답노트 보존 완료! 30칩 리워드가 활성화되었습니다.");
+}
+
+function renderInvestmentDiaries() {
+    const anchor = document.getElementById('diary-render-anchor');
+    if(!anchor) return;
+    anchor.innerHTML = '';
+    
+    runtimeDiaries.forEach(d => {
+        anchor.innerHTML += `
+            <div class="toss-premium-card styled-diary-card">
+                <div class="diary-card-top">
+                    <span class="date-txt">${d.date} 오답노트</span>
+                    <span class="rate-txt ${d.yieldRate >= 0 ? 'type-up' : 'type-down'}">${d.yieldRate >= 0 ? '+' : ''}${d.yieldRate}%</span>
+                </div>
+                <p class="diary-card-body-text">${d.text}</p>
+            </div>
+        `;
+    });
+}
+
+function renderLeagueRankings() {
+    const anchor = document.getElementById('ranking-render-anchor');
+    if(!anchor) return;
+    anchor.innerHTML = '';
+    
+    runtimeRankings.forEach(r => {
+        anchor.innerHTML += `
+            <div class="table-ranking-row">
+                <div class="ranking-left-meta">
+                    <div class="ranking-badge position-${r.rank}">${r.rank}</div>
+                    <div class="ranking-avatar-mini">${r.emoji}</div>
+                    <div class="ranking-user-info">
+                        <div class="name">${r.name} <span class="age">${r.age}세</span></div>
+                        <div class="progress-bar-rail"><div class="progress-bar-fill" style="width: ${r.progress}%"></div></div>
+                    </div>
+                </div>
+                <span class="ranking-yield-text">+${r.rate}%</span>
+            </div>
+        `;
+    });
+}
+
+let toastTimer = null;
+function triggerToastNotification(msg) {
+    const container = document.getElementById('global-toast');
+    const txtDom = document.getElementById('toast-text');
+    if(!container || !txtDom) return;
+
+    txtDom.innerText = msg;
+    container.classList.remove('hidden');
+
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        container.classList.add('hidden');
+    }, 3000);
+}
+
+function launchDirectMessage(targetName, targetEmoji) {
+    document.getElementById('chat-target-name').innerText = `@${targetName}`;
+    document.getElementById('chat-target-avatar').innerText = targetEmoji;
+    document.getElementById('modal-chat-layer').style.display = 'block';
+    
+    const stream = document.getElementById('chat-bubble-stream-viewport');
+    stream.innerHTML = `<div class="chat-bubble-row type-incoming">안녕하세요! 이번 주말 모의투자 리그 전략 고도화 세션 참여 제안드립니다. 정보 같이 교환해요! 😊</div>`;
+    stream.scrollTop = stream.scrollHeight;
+}
+
+function terminateChatSession() { document.getElementById('modal-chat-layer').style.display = 'none'; }
+
+function dispatchDirectMessage() {
+    const input = document.getElementById('chat-input-field');
+    const rawMsg = input.value.trim();
+    if (!rawMsg) return;
+
+    const stream = document.getElementById('chat-bubble-stream-viewport');
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble-row type-outgoing';
+    bubble.innerText = rawMsg;
+    
+    stream.appendChild(bubble);
+    input.value = '';
+    stream.scrollTop = stream.scrollHeight;
+}
+
+function purchaseRewardItem(itemName, itemPrice) {
+    if (!globalState) return;
+    if (globalState.chips < itemPrice) {
+        triggerToastNotification(`❌ 보유 칩 잔액이 부족합니다. 피드 작성 또는 오답노트를 작성하세요.`);
+        return;
+    }
+    globalState.chips -= itemPrice;
+    StorageEngine.save('state', globalState);
+    syncProfileDomElements();
+    
+    document.getElementById('sheet-headline-display').innerText = "모바일 쿠폰 발급 성공 🎉";
+    document.getElementById('sheet-body-display').innerText = `[${itemName}] 모바일 기프티콘 승인 바코드가 가입 인프라 회선 연락처로 실시간 즉시 발송되었습니다.`;
+    document.getElementById('modal-sheet-layer').style.display = 'flex';
+}
+</script>
+</body>
+</html>
