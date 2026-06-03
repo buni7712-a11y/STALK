@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STALK - 학생 투자 커뮤니티</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-background text-zinc-100 font-sans min-h-screen flex flex-col md:flex-row">
+
+  <aside class="w-full md:w-64 bg-surface p-5 border-b md:border-r border-border flex flex-col justify-between">
+    <div>
+      <h1 class="text-2xl font-black text-neon tracking-wider mb-8" style="color: #1A66CC;">STALK</h1>
+      <nav class="space-y-1.5 text-sm font-medium">
+        <button onclick="showSection('feed-section')" class="w-full text-left p-3 rounded-xl bg-zinc-800 text-white font-bold" id="menu-feed">🔥 실시간 피드</button>
+        <button onclick="showSection('diary-section')" class="w-full text-left p-3 rounded-xl text-zinc-400 hover:bg-zinc-800 hover:text-white transition" id="menu-diary">📝 나의 투자일기</button>
+        <button onclick="showSection('ranking-section')" class="w-full text-left p-3 rounded-xl text-zinc-400 hover:bg-zinc-800 hover:text-white transition" id="menu-ranking">🏆 학생 주주 랭킹</button>
+      </nav>
+    </div>
+    
+    <div class="mt-6 pt-4 border-t border-border space-y-3">
+      <div id="auth-status" class="text-xs text-zinc-400">인증 상태: <span class="text-red-400 font-bold">미인증</span></div>
+      <button onclick="verifyStudent()" class="w-full bg-brand p-3 rounded-xl font-bold text-sm hover:opacity-90 transition">학생 인증하기</button>
+    </div>
+  </aside>
+
+  <main class="flex-1 p-6 max-w-2xl mx-auto w-full">
+    <section id="feed-section" class="space-y-6">
+      <div class="flex gap-2 overflow-x-auto pb-2 text-xs font-bold">
+        <button class="bg-zinc-800 px-3 py-1.5 rounded-full text-neon">전체</button>
+        <button class="bg-surface border border-border px-3 py-1.5 rounded-full text-zinc-400">국내주식</button>
+        <button class="bg-surface border border-border px-3 py-1.5 rounded-full text-zinc-400">해외주식</button>
+        <button class="bg-surface border border-border px-3 py-1.5 rounded-full text-zinc-400">질문</button>
+      </div>
+
+      <div class="bg-surface p-4 rounded-2xl border border-border space-y-3">
+        <input id="postTitle" type="text" placeholder="제목을 입력하세요" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-brand">
+        <textarea id="postContent" placeholder="오늘 어떤 종목을 보셨나요?" rows="2" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-brand resize-none"></textarea>
+        <div class="flex justify-end">
+          <button onclick="addPost()" class="bg-brand text-white px-5 py-2 rounded-xl text-sm font-bold">게시하기</button>
+        </div>
+      </div>
+
+      <div id="feed" class="space-y-4"></div>
+    </section>
+
+    <section id="diary-section" class="space-y-6 hidden">
+      <h2 class="text-xl font-black">📝 나의 투자일기</h2>
+      <div class="bg-surface p-4 rounded-2xl border border-border space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <input id="diaryProfit" type="number" placeholder="수익률 (%) 예: 5.5" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none">
+          <input id="diaryTitle" type="text" placeholder="일기 제목" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none">
+        </div>
+        <textarea id="diaryContent" placeholder="오늘의 투자 반성 노트를 작성해보세요." rows="2" class="w-full bg-zinc-800 border border-border rounded-xl p-3 text-sm focus:outline-none resize-none"></textarea>
+        <button onclick="addDiary()" class="w-full bg-neon text-zinc-950 py-2.5 rounded-xl text-sm font-bold">일기 기록 저장</button>
+      </div>
+      <div id="diary-list" class="grid grid-cols-1 gap-3"></div>
+    </section>
+
+    <section id="ranking-section" class="space-y-6 hidden">
+      <h2 class="text-xl font-black">🏆 학생 주주 활동 랭킹</h2>
+      <div class="bg-surface rounded-2xl border border-border divide-y divide-border">
+        <div class="p-4 flex justify-between items-center"><span class="font-bold text-neon">1위🥇 김개미</span><span class="text-xs text-zinc-400">활동점수 2,450p</span></div>
+        <div class="p-4 flex justify-between items-center"><span class="font-bold text-zinc-300">2위🥈 스톡킹</span><span class="text-xs text-zinc-400">활동점수 1,890p</span></div>
+        <div class="p-4 flex justify-between items-center"><span class="font-bold text-zinc-400">3위🥉 비트중딩</span><span class="text-xs text-zinc-400">활동점수 1,200p</span></div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="w-full md:w-72 p-6 space-y-6 border-t md:border-l border-border">
+    <div class="bg-surface p-4 rounded-2xl border border-border">
+      <h3 class="text-sm font-bold mb-2 flex items-center gap-1.5">🔔 알림</h3>
+      <div class="text-xs text-zinc-400 space-y-2">
+        <p>❤️ '김개미'님이 내 게시글을 좋아합니다.</p>
+        <p>💬 '스톡킹'님이 댓글을 남겼습니다.</p>
+      </div>
+    </div>
+    <div class="bg-zinc-900 border border-dashed border-zinc-700 rounded-2xl p-6 text-center text-xs text-zinc-500">
+      <p class="font-bold mb-1">📢 학생 맞춤 경제 배너 광고</p>
+      <p>문의: stalk@example.com</p>
+    </div>
+  </aside>
+
+  <script src="script.js"></script>
+</body>
+</html>
